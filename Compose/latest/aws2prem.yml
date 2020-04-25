@@ -1,0 +1,26 @@
+version: '3.7'
+services:
+ aws2prem:
+  image: "secobau/proxy2aws:latest"
+  ports:
+   - "8080:80"
+  volumes:
+   - aws2prem:/var/log/nginx
+  secrets:
+   - source: aws2prem
+     target: etc/nginx/conf.d/aws2prem.conf
+     mode: 0440
+  deploy:
+   replicas: 3
+   restart_policy:
+    condition: any
+   placement:
+    constraints:
+     - node.role == worker
+volumes:
+ aws2prem:
+secrets:
+ aws2prem:
+  file: /secrets/etc/nginx/conf.d/aws2prem.conf
+
+

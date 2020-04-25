@@ -1,0 +1,53 @@
+version: '3.7'
+services:
+ aws2cloud:
+  image: "secobau/proxy2aws:release-3.0"
+  ports:
+   - "8888:80"
+  volumes:
+   - aws2cloud:/var/log/nginx
+  configs:
+   - source: aws2cloud
+     target: /etc/nginx/conf.d/aws2cloud.conf
+     mode: 0440
+  secrets:
+   - source: aws2cloud
+     target: etc/nginx/aws2cloud.htpasswd
+     mode: 0440
+     uid: '101'
+     gid: '101'
+  deploy:
+   replicas: 3
+   restart_policy:
+    condition: any
+   placement:
+    constraints:
+     - node.role == worker
+ cloud2instance:
+  image: "secobau/proxy2aws:release-3.0"
+  volumes:
+   - cloud2instance:/var/log/nginx
+  secrets:
+   - source: cloud2instance
+     target: etc/nginx/conf.d/cloud2instance.conf
+     mode: 0440
+  deploy:
+   replicas: 3
+   restart_policy:
+    condition: any
+   placement:
+    constraints:
+     - node.role == worker
+volumes:
+ aws2cloud:
+ cloud2instance:
+configs:
+ aws2cloud:
+  file: /configs/etc/nginx/conf.d/aws2cloud.conf
+secrets:
+ aws2cloud:
+  file: /secrets/etc/nginx/aws2cloud.htpasswd
+ cloud2instance:
+  file: /secrets/etc/nginx/conf.d/cloud2instance.conf
+
+
